@@ -8,7 +8,7 @@
 	<artifactId>bootq</artifactId>
 	<version>7.32.0</version>
 	<properties>
-		<genny.version>${version}</genny.version>
+		<genny.version>${project.version}</genny.version>
 		<compiler-plugin.version>3.8.1</compiler-plugin.version>
 		<maven.compiler.parameters>true</maven.compiler.parameters>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -37,6 +37,10 @@
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-smallrye-health</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-oidc</artifactId>
 		</dependency>
 
 		<dependency>
