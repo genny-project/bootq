@@ -39,8 +39,8 @@ services:
 #    container_name: bootq 
     volumes:
       - ./google_credentials:/root/.genny/sheets.googleapis.com-java-quickstart
-##    env_file:
-##      - ${ENV_FILE}
+    env_file:
+      - ${ENV_FILE}
     environment:
 #      - VIRTUAL_HOST=bootq.*
       - VIRTUAL_PORT=8080
