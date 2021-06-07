@@ -48,6 +48,7 @@ services:
       - CERT_NAME=genny.life
       - DEBUG_SUSPEND=n
   #    - DDT_URL=http://bridge:8089 
+      - FULL_MYSQL_URL=jdbc:mysql://mysql/gennydb
     ports:
       - "8480:8080"
       - "8487:8787"
