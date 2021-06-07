@@ -28,10 +28,11 @@ public class App {
 
      private Realm rx;
 
-//    @GET
-//    @Path("/loadsheets")
-//    @Produces(MediaType.TEXT_PLAIN)
-//    public void hello() {
+    @GET
+    @Path("/loadsheets")
+    @Produces(MediaType.TEXT_PLAIN)
+    public void hello() {
+        System.out.println("hello");
 //        Realm realm = new Realm(BatchLoadMode.ONLINE, "17CbqWLICh882xKVTU5J5mqqvGVl2F0Z7mdTgiAHAXx8");
 //
 //        List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
@@ -57,5 +58,5 @@ public class App {
 //                    }
 //                }
 //        );
-//    }
+    }
 }
