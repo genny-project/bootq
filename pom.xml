@@ -33,7 +33,11 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>log4j2-jboss-logmanager</artifactId> 
+        </dependency>
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-smallrye-health</artifactId>
@@ -67,48 +71,54 @@
 			<groupId>life.genny</groupId>
 			<artifactId>bootxport</artifactId>
 			<version>${genny.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-support</artifactId>
-        <exclusions>
+        <!--exclusions>
             <exclusion>
                 <artifactId>xml-apis</artifactId>
                 <groupId>xml-apis</groupId>
             </exclusion>
-        </exclusions>
+        </exclusions-->
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel</groupId>
 			<artifactId>camel-google-sheets</artifactId>
-			        <exclusions>
-            <exclusion>
-                <artifactId>xml-apis</artifactId>
-                <groupId>xml-apis</groupId>
-            </exclusion>
-        </exclusions>
+            <!--exclusions>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions-->
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel.quarkus</groupId>
 			<artifactId>camel-quarkus-google-sheets</artifactId>
 			<version>1.8.1</version>
-			        <exclusions>
-            <exclusion>
-                <artifactId>xml-apis</artifactId>
-                <groupId>xml-apis</groupId>
-            </exclusion>
-        </exclusions>
+            <!--exclusions>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions-->
 		</dependency>
 		<dependency>
 			<groupId>org.apache.camel.quarkus</groupId>
 			<artifactId>camel-quarkus-core-deployment</artifactId>
 			<version>1.8.1</version>
-			        <exclusions>
-            <exclusion>
-                <artifactId>xml-apis</artifactId>
-                <groupId>xml-apis</groupId>
-            </exclusion>
-        </exclusions>
+            <!--exclusions>
+                <exclusion>
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions-->
 		</dependency>
 		<dependency>
 			<groupId>io.quarkus</groupId>
