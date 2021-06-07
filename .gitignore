@@ -24,3 +24,4 @@ minio/
 tmp/
 **/*.zip
 /target/
+bootq-git.properties
