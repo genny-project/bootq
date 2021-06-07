@@ -23,10 +23,10 @@ import org.hibernate.SessionFactory;
 
 @Path("/")
 public class App {
-	
-	private static final Logger log = Logger.getLogger(App.class);
 
-     private Realm rx;
+    private static final Logger log = Logger.getLogger(App.class);
+
+    private Realm rx;
 
     @GET
     @Path("/loadsheets")
@@ -46,17 +46,17 @@ public class App {
                     return Tuple.of(d, bl);
                 }
         ).collect(Collectors.toList());
-//
-//        collect.parallelStream().forEach(d ->
-//                {
-//                    if (!d._1.getDisable() && !d._1.getSkipGoogleDoc())
-//                        d._2.persistProject(d._1);
-//                    else {
-//                        System.out.println("Realm:" + d._1.getName()
-//                                + ", disabled:" + d._1.getDisable()
-//                                + ", skipGoogleDoc:" + d._1.getSkipGoogleDoc());
-//                    }
-//                }
-//        );
+
+        collect.parallelStream().forEach(d ->
+                {
+                    if (!d._1.getDisable() && !d._1.getSkipGoogleDoc())
+                        d._2.persistProject(d._1);
+                    else {
+                        System.out.println("Realm:" + d._1.getName()
+                                + ", disabled:" + d._1.getDisable()
+                                + ", skipGoogleDoc:" + d._1.getSkipGoogleDoc());
+                    }
+                }
+        );
     }
 }
