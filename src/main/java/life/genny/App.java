@@ -33,19 +33,19 @@ public class App {
     @Produces(MediaType.TEXT_PLAIN)
     public void hello() {
         System.out.println("hello");
-//        Realm realm = new Realm(BatchLoadMode.ONLINE, "17CbqWLICh882xKVTU5J5mqqvGVl2F0Z7mdTgiAHAXx8");
-//
-//        List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
-//                    SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-//                    Session openSession = sessionFactory.openSession();
-//                    EntityManager createEntityManager =
-//                            openSession.getEntityManagerFactory().createEntityManager();
-//                    QwandaRepository repo =
-//                            new QwandaRepositoryImpl(createEntityManager);
-//                    BatchLoading bl = new BatchLoading(repo);
-//                    return Tuple.of(d, bl);
-//                }
-//        ).collect(Collectors.toList());
+        Realm realm = new Realm(BatchLoadMode.ONLINE, "17CbqWLICh882xKVTU5J5mqqvGVl2F0Z7mdTgiAHAXx8");
+
+        List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
+                    SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+                    Session openSession = sessionFactory.openSession();
+                    EntityManager createEntityManager =
+                            openSession.getEntityManagerFactory().createEntityManager();
+                    QwandaRepository repo =
+                            new QwandaRepositoryImpl(createEntityManager);
+                    BatchLoading bl = new BatchLoading(repo);
+                    return Tuple.of(d, bl);
+                }
+        ).collect(Collectors.toList());
 //
 //        collect.parallelStream().forEach(d ->
 //                {
