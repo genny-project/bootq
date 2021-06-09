@@ -30,8 +30,8 @@ public class App {
     @GET
     @Path("/version")
     @Produces(MediaType.TEXT_PLAIN)
-    public void version() {
-        System.out.println("hello");
+    public String version() {
+        return "running version:9.0.0";
     }
 
     @GET
