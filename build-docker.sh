@@ -8,6 +8,7 @@ function prop() {
 version=$(prop 'git.build.version')
 
 
+USER=`whoami`
 ./mvnw clean package -Dquarkus.container-image.build=true -DskipTests=true
 docker tag ${USER}/${project}:${version} ${org}/${project}:${version}
 docker tag ${USER}/${project}:${version} ${org}/${project}:latest
