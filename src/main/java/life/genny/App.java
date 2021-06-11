@@ -27,12 +27,17 @@ public class App {
 	private static final Logger log = Logger.getLogger(App.class);
 
      private Realm rx;
+    @GET
+    @Path("/version")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String version() {
+        return "running version:9.0.0";
+    }
 
     @GET
     @Path("/loadsheets")
     @Produces(MediaType.TEXT_PLAIN)
     public void hello() {
-        System.out.println("hello");
         Realm realm = new Realm(BatchLoadMode.ONLINE, "17CbqWLICh882xKVTU5J5mqqvGVl2F0Z7mdTgiAHAXx8");
 
         List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
