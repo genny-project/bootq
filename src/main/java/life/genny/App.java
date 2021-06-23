@@ -41,7 +41,15 @@ public class App {
     @Produces(MediaType.TEXT_PLAIN)
     @Transactional
     public String loadSheets() {
-        Realm realm = new Realm(BatchLoadMode.ONLINE, "17CbqWLICh882xKVTU5J5mqqvGVl2F0Z7mdTgiAHAXx8");
+        String sheetId = System.getenv("GOOGLE_SHEETS_ID");
+        String msg = "";
+        if (sheetId == null) {
+            msg = "Can't find env GOOGLE_SHEETS_ID!!!";
+            log.error(msg);
+            return msg;
+        }
+
+        Realm realm = new Realm(BatchLoadMode.ONLINE, sheetId);
 
         List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
                     QwandaRepository repo = new QwandaRepositoryImpl(em);
