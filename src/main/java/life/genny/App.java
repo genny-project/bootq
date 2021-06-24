@@ -11,20 +11,19 @@ import java.util.stream.Collectors;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import life.genny.bootxport.bootx.*;
+import life.genny.bootxport.utils.HibernateUtil;
 import life.genny.bootxport.xlsimport.BatchLoading;
 
 import org.jboss.logging.Logger;
 
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import life.genny.bootxport.utils.HibernateUtil;
-
 
 @Path("/")
 public class App {
-
-
-    private static final Logger log = Logger.getLogger(App.class);
+	
+	private static final Logger log = Logger.getLogger(App.class);
 
     @GET
     @Path("/version")
