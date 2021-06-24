@@ -1,9 +1,6 @@
 package life.genny;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.transaction.Transactional;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -23,7 +20,6 @@ import org.hibernate.SessionFactory;
 import life.genny.bootxport.utils.HibernateUtil;
 
 
-@ApplicationScoped
 @Path("/")
 public class App {
 
@@ -40,7 +36,6 @@ public class App {
     @GET
     @Path("/loadsheets")
     @Produces(MediaType.TEXT_PLAIN)
-    @Transactional
     public String loadSheets() {
         String sheetId = System.getenv("GOOGLE_SHEETS_ID");
         String msg = "";
