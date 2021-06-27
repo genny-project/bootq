@@ -3,6 +3,7 @@ package life.genny;
 import javax.persistence.EntityManager;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -15,8 +16,7 @@ import life.genny.bootxport.utils.HibernateUtil;
 import life.genny.bootxport.xlsimport.BatchLoading;
 
 import org.jboss.logging.Logger;
-
-
+import org.apache.maven.shared.utils.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
@@ -29,7 +29,7 @@ public class App {
     @Path("/version")
     @Produces(MediaType.TEXT_PLAIN)
     public String version() {
-        return "running version:9.0.0";
+        return "running version:9.2.0";
     }
 
     @GET
@@ -37,7 +37,21 @@ public class App {
     @Produces(MediaType.TEXT_PLAIN)
     public String loadSheets() {
         String sheetId = System.getenv("GOOGLE_SHEETS_ID");
-        String msg = "";
+        if (StringUtils.isBlank(sheetId)) {
+        	sheetId = System.getenv("GOOGLE_HOSTING_SHEET_ID");
+        }
+        loadSheetsById(sheetId);
+        
+        
+        return "Finished batch loading";
+    }
+    
+    
+    @GET
+    @Path("/loadsheets/{sheetid}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
+       String msg = "";
         if (sheetId == null) {
             msg = "Can't find env GOOGLE_SHEETS_ID!!!";
             log.error(msg);
@@ -67,6 +81,10 @@ public class App {
                     }
                 }
         );
+        
+       
+        
+        
         return "Finished batch loading";
     }
 }
