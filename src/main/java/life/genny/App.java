@@ -72,9 +72,10 @@ public class App {
 
         collect.parallelStream().forEach(d ->
                 {
-                    if (!d._1.getDisable() && !d._1.getSkipGoogleDoc())
+                    if (!d._1.getDisable() && !d._1.getSkipGoogleDoc()) {
                         d._2.persistProject(d._1);
-                    else {
+                        System.out.println("Finish batch loading, sheetID:" + d._1.getUri());
+                    } else {
                         System.out.println("Realm:" + d._1.getName()
                                 + ", disabled:" + d._1.getDisable()
                                 + ", skipGoogleDoc:" + d._1.getSkipGoogleDoc());
