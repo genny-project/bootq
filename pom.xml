@@ -169,11 +169,6 @@
 			<artifactId>quarkus-container-image-docker</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>stax</groupId>
-			<artifactId>stax</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-		<dependency>
 			<groupId>life.genny</groupId>
 			<artifactId>genny-verticle-rules</artifactId>
 			<version>${project.version}</version>
@@ -190,6 +185,10 @@
 					<artifactId>xml-apis</artifactId>
 					<groupId>xml-apis</groupId>
 				</exclusion>
+                <exclusion>
+                    <groupId>stax</groupId>
+                    <artifactId>stax-api</artifactId>
+                </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
