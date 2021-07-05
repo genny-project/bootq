@@ -44,8 +44,9 @@ public class App {
             .openStream());
         String projectDependencies = properties.getProperty(PROJECT_DEPENDENCIES);
         versionString = GitUtils.getGitVersionString(projectDependencies);
-      } catch (IOException e) {
+      } catch (Exception e) {
         log.error("Error reading GitVersion.properties", e);
+        return Response.status(200).entity("Error reading version properties").build();
       }
 
       return Response.status(200).entity(versionString).build();
