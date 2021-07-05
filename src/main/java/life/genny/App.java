@@ -7,9 +7,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import io.vavr.Tuple;
@@ -17,8 +15,8 @@ import io.vavr.Tuple2;
 import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.utils.HibernateUtil;
 import life.genny.bootxport.xlsimport.BatchLoading;
-import life.genny.qwandautils.GitUtils;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 
@@ -27,29 +25,17 @@ import org.hibernate.SessionFactory;
 
 @Path("/")
 public class App {
-	
-	private static final Logger log = Logger.getLogger(App.class);
 
-	  public static final String GIT_VERSION_PROPERTIES = "GitVersion.properties";	  
-	  public static final String PROJECT_DEPENDENCIES = "project_dependencies";
+    private static final Logger log = Logger.getLogger(App.class);
 
-  @GET
+    @ConfigProperty(name = "quarkus.application.version")
+    String version;
+
+    @GET
   @Path("/version")
   @Produces(MediaType.TEXT_PLAIN)
   public Response version() {
-      Properties properties = new Properties();
-      String versionString = "";
-      try {
-        properties.load(Thread.currentThread().getContextClassLoader().getResource(GIT_VERSION_PROPERTIES)
-            .openStream());
-        String projectDependencies = properties.getProperty(PROJECT_DEPENDENCIES);
-        versionString = GitUtils.getGitVersionString(projectDependencies);
-      } catch (Exception e) {
-        log.error("Error reading GitVersion.properties", e);
-        return Response.status(200).entity("Error reading version properties").build();
-      }
-
-      return Response.status(200).entity(versionString).build();
+      return Response.status(200).entity("Application version:" + version).build();
   }
   
     @GET
