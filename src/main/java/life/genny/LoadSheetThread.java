@@ -54,7 +54,7 @@ public class LoadSheetThread extends Thread {
                 log.info("Start loading sheets, sheetId:" + sheetId);
                 doSheetsLoading(sheetId);
                 log.info("Finish loading sheets, sheetId:" + sheetId);
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
