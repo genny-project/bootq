@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 public class LoadSheetThread extends Thread {
     protected static final Logger log = org.apache.logging.log4j.LogManager
             .getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
-    LinkedBlockingQueue queue;
+    LinkedBlockingQueue<String> queue;
 
-    public LoadSheetThread(LinkedBlockingQueue queue) {
+    public LoadSheetThread(LinkedBlockingQueue<String> queue) {
         this.queue = queue;
     }
 
@@ -50,7 +50,7 @@ public class LoadSheetThread extends Thread {
     public void run() {
         while (true) {
             try {
-                String sheetId = (String) queue.take();
+                String sheetId = queue.take();
                 log.info("Start loading sheets, sheetId:" + sheetId);
                 doSheetsLoading(sheetId);
                 log.info("Finish loading sheets, sheetId:" + sheetId);
