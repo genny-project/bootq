@@ -33,7 +33,7 @@ public class App {
     private static final Logger log = Logger.getLogger(App.class);
     private static final LinkedBlockingQueue<String> requestQueue = new LinkedBlockingQueue<>() ;
 
-    App() {
+    public App() {
         LoadSheetThread loadSheetThread = new LoadSheetThread(requestQueue);
         loadSheetThread.start();
     }
