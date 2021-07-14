@@ -173,7 +173,7 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-container-image-docker</artifactId>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>life.genny</groupId>
             <artifactId>genny-verticle-rules</artifactId>
             <version>${genny.version}</version>
@@ -195,7 +195,7 @@
                     <artifactId>stax-api</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-metrics</artifactId>
