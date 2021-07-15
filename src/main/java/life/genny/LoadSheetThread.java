@@ -6,6 +6,7 @@ import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.xlsimport.BatchLoading;
 import org.apache.logging.log4j.Logger;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
+@ApplicationScoped
 public class LoadSheetThread extends Thread {
     protected static final Logger log = org.apache.logging.log4j.LogManager
             .getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
