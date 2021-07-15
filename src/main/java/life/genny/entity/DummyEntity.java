@@ -1,6 +1,7 @@
 package life.genny.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,6 +10,7 @@ import javax.persistence.SequenceGenerator;
 
 @Entity
 public class DummyEntity extends PanacheEntity {
+    @Audited
     private String name;
 
 /*
