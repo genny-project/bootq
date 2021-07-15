@@ -26,15 +26,21 @@ import org.jboss.logging.Logger;
 import ch.qos.logback.core.status.Status;
 
 import org.apache.maven.shared.utils.StringUtils;
+import javax.persistence.EntityManager;
+import javax.inject.Inject;
+import javax.enterprise.context.ApplicationScoped;
 
+@ApplicationScoped
 @Path("/bootq/")
 public class App {
+    @Inject
+    EntityManager em;
 
     private static final Logger log = Logger.getLogger(App.class);
     private static final LinkedBlockingQueue<String> requestQueue = new LinkedBlockingQueue<>() ;
 
     public App() {
-        LoadSheetThread loadSheetThread = new LoadSheetThread(requestQueue);
+        LoadSheetThread loadSheetThread = new LoadSheetThread(requestQueue, em);
         loadSheetThread.start();
     }
 

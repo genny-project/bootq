@@ -3,11 +3,8 @@ package life.genny;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import life.genny.bootxport.bootx.*;
-import life.genny.bootxport.utils.HibernateUtil;
 import life.genny.bootxport.xlsimport.BatchLoading;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 
 import javax.persistence.EntityManager;
 import java.lang.invoke.MethodHandles;
@@ -19,18 +16,20 @@ public class LoadSheetThread extends Thread {
     protected static final Logger log = org.apache.logging.log4j.LogManager
             .getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
     LinkedBlockingQueue<String> queue;
+    EntityManager em;
 
-    public LoadSheetThread(LinkedBlockingQueue<String> queue) {
+    public LoadSheetThread(LinkedBlockingQueue<String> queue, EntityManager em) {
         this.queue = queue;
+        this.em = em;
     }
 
     private void doSheetsLoading(String sheetId) {
         Realm realm = new Realm(BatchLoadMode.ONLINE, sheetId);
         List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
-            SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-            Session openSession = sessionFactory.openSession();
-            EntityManager createEntityManager = openSession.getEntityManagerFactory().createEntityManager();
-            QwandaRepository repo = new QwandaRepositoryImpl(createEntityManager);
+//            SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+//            Session openSession = sessionFactory.openSession();
+//            EntityManager createEntityManager = openSession.getEntityManagerFactory().createEntityManager();
+            QwandaRepository repo = new QwandaRepositoryImpl(em);
             BatchLoading bl = new BatchLoading(repo);
             return Tuple.of(d, bl);
         }).collect(Collectors.toList());
