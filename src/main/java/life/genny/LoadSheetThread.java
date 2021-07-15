@@ -6,7 +6,9 @@ import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.xlsimport.BatchLoading;
 import org.apache.logging.log4j.Logger;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,13 +18,15 @@ public class LoadSheetThread extends Thread {
     protected static final Logger log = org.apache.logging.log4j.LogManager
             .getLogger(MethodHandles.lookup().lookupClass().getCanonicalName());
     LinkedBlockingQueue<String> queue;
+
+    @Inject
     EntityManager em;
 
-    public LoadSheetThread(LinkedBlockingQueue<String> queue, EntityManager em) {
+    public LoadSheetThread(LinkedBlockingQueue<String> queue) {
         this.queue = queue;
-        this.em = em;
     }
 
+    @Transactional
     private void doSheetsLoading(String sheetId) {
         Realm realm = new Realm(BatchLoadMode.ONLINE, sheetId);
         List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
