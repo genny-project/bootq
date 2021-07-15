@@ -11,6 +11,7 @@ import javax.persistence.SequenceGenerator;
 public class DummyEntity extends PanacheEntity {
     private String name;
 
+/*
     @Id
     @SequenceGenerator(name = "deSeq", sequenceName = "gift_id_seq", allocationSize = 1, initialValue = 1)
     @GeneratedValue(generator = "deSeq")
@@ -21,6 +22,7 @@ public class DummyEntity extends PanacheEntity {
     public void setId(Long id) {
         this.id = id;
     }
+ */
 
     public String getName() {
         return name;
