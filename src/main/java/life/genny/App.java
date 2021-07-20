@@ -1,43 +1,32 @@
 package life.genny;
 
+import life.genny.bootq.BatchLoading;
+import life.genny.bootq.Realm;
+import life.genny.bootq.RealmUnit;
+import org.apache.maven.shared.utils.StringUtils;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import io.vertx.core.json.JsonObject;
-import life.genny.models.GennyToken;
-import life.genny.qwanda.entity.BaseEntity;
-import life.genny.qwanda.entity.SearchEntity;
-import life.genny.qwandautils.GennySettings;
-import life.genny.utils.BaseEntityUtils;
-import life.genny.utils.RulesUtils;
-import life.genny.utils.VertxUtils;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.logging.Logger;
-
-import ch.qos.logback.core.status.Status;
-
-import org.apache.maven.shared.utils.StringUtils;
-import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 @Path("/bootq/")
 public class App {
     private static final Logger log = Logger.getLogger(App.class);
-    private static final LinkedBlockingQueue<String> requestQueue = new LinkedBlockingQueue<>() ;
-
-    public App() {
-        LoadSheetThread loadSheetThread = new LoadSheetThread(requestQueue);
-        loadSheetThread.start();
-    }
+    @Inject
+    @PersistenceContext
+    EntityManager em;
 
     @ConfigProperty(name = "quarkus.application.version")
     String version;
@@ -49,8 +38,10 @@ public class App {
         return Response.status(200).entity("Application version:" + version).build();
     }
 
+/*
     @GET
     @Path("/loadsheets")
+    @Transactional
     @Produces(MediaType.TEXT_PLAIN)
     public String loadSheets() {
         String sheetId = System.getenv("GOOGLE_SHEETS_ID");
@@ -60,25 +51,33 @@ public class App {
         loadSheetsById(sheetId);
         return "Finished batch loading";
     }
+ */
 
     @GET
     @Path("/loadsheets/{sheetid}")
     @Produces(MediaType.TEXT_PLAIN)
+    @Transactional
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
         String msg = "";
+
         if (sheetId == null) {
             msg = "Can't find env GOOGLE_SHEETS_ID!!!";
             log.error(msg);
             return msg;
         }
-        try {
-            requestQueue.put(sheetId);
-        } catch (InterruptedException iptEx) {
-            iptEx.printStackTrace();
+        QwandaRepositoryService repo = new QwandaRepositoryService(em);
+        Realm realm = new Realm(sheetId);
+        List<RealmUnit> units = realm.getDataUnits();
+        for (RealmUnit rm : units) {
+            if (!(rm.getDisable()) && !(rm.getSkipGoogleDoc())) {
+                BatchLoading bl = new BatchLoading(repo);
+                bl.persistProjectOptimization(rm);
+            }
         }
         return "Added batch loading request to queue.";
     }
 
+/*
     @GET
     @Path("/loaddefs/{realm}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -120,4 +119,5 @@ public class App {
         return Response.ok().build();
     }
 
+ */
 }
