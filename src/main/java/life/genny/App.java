@@ -77,6 +77,7 @@ public class App {
     @Path("/loadsheets/{sheetid}")
     @Produces(MediaType.TEXT_PLAIN)
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
+        System.out.println("test1");
         String msg = "";
         if (sheetId == null) {
             msg = "Can't find env GOOGLE_SHEETS_ID!!!";
