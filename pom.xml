@@ -35,11 +35,11 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
-        <dependency>
+        <!--dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-c3p0</artifactId>
             <version>5.5.4.Final</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>log4j2-jboss-logmanager</artifactId>
@@ -83,10 +83,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--dependency>
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm</artifactId>
-        </dependency-->
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-envers</artifactId>
+        </dependency>
         <!--dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-infinispan-client</artifactId>

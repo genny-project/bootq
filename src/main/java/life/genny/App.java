@@ -1,19 +1,15 @@
 package life.genny;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.transaction.Transactional;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import io.vertx.core.json.JsonObject;
 import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.xlsimport.BatchLoading;
@@ -22,7 +18,6 @@ import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwandautils.GennySettings;
 import life.genny.utils.BaseEntityUtils;
-import life.genny.utils.HibernateUtil;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
 
@@ -30,10 +25,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import ch.qos.logback.core.status.Status;
-
-import org.apache.maven.shared.utils.StringUtils;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 
 @Path("/bootq/")
 public class App {
@@ -50,37 +41,28 @@ public class App {
         return Response.status(200).entity("Application version:" + version).build();
     }
 
+    @Inject
+    EntityManager em;
 
-/*
-// Test HibernateUtil
-    @GET
-    @Path("/test")
-    public void test() {
-        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-        Session openSession = sessionFactory.openSession();
-        EntityManager createEntityManager = openSession.getEntityManagerFactory().createEntityManager();
-        QwandaRepository repo = new QwandaRepositoryImpl(createEntityManager);
-        BatchLoading bl = new BatchLoading(repo);
-    }
- */
 
-    @GET
-    @Path("/loadsheets")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String loadSheets() {
-        String sheetId = System.getenv("GOOGLE_SHEETS_ID");
-        if (StringUtils.isBlank(sheetId)) {
-            sheetId = System.getenv("GOOGLE_HOSTING_SHEET_ID");
+    /*
+    // Test HibernateUtil
+        @GET
+        @Path("/test")
+        public void test() {
+            SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+            Session openSession = sessionFactory.openSession();
+            EntityManager createEntityManager = openSession.getEntityManagerFactory().createEntityManager();
+            QwandaRepository repo = new QwandaRepositoryImpl(createEntityManager);
+            BatchLoading bl = new BatchLoading(repo);
         }
-        loadSheetsById(sheetId);
-        return "Finished batch loading";
-    }
+     */
 
     @GET
     @Path("/loadsheets/{sheetid}")
     @Produces(MediaType.TEXT_PLAIN)
+    @Transactional
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
-        System.out.println("test1");
         String msg = "";
         if (sheetId == null) {
             msg = "Can't find env GOOGLE_SHEETS_ID!!!";
@@ -89,11 +71,22 @@ public class App {
         }
 
         Realm realm = new Realm(BatchLoadMode.ONLINE, sheetId);
+        List<RealmUnit> realmUnits = realm.getDataUnits();
+        for (RealmUnit realmUnit : realmUnits) {
+            if (!realmUnit.getDisable() && !realmUnit.getSkipGoogleDoc()) {
+                QwandaRepository repo = new QwandaRepositoryService(em);
+                BatchLoading bl = new BatchLoading(repo);
+                bl.persistProjectOptimization(realmUnit);
+                log.info("Finished batch loading for sheet" + realmUnit.getUri());
+            }
+        }
+
+        /*
         List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
-            SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-            Session openSession = sessionFactory.openSession();
-            EntityManager createEntityManager = openSession.getEntityManagerFactory().createEntityManager();
-            QwandaRepository repo = new QwandaRepositoryImpl(createEntityManager);
+//            SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+//            Session openSession = sessionFactory.openSession();
+//            EntityManager createEntityManager = openSession.getEntityManagerFactory().createEntityManager();
+            QwandaRepository repo = new QwandaRepositoryService(em);
             BatchLoading bl = new BatchLoading(repo);
             return Tuple.of(d, bl);
         }).collect(Collectors.toList());
@@ -107,6 +100,7 @@ public class App {
                         + d._1.getSkipGoogleDoc());
             }
         });
+         */
         return "Finished batch loading";
     }
 

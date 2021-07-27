@@ -4,6 +4,13 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
 
+## Environment
+CLEANUP_TASK_AND_BEATTRFORM     
+value: true, false    
+    
+GOOGLE_SVC_ACC_PATH     
+value: Google service token file token-secret-service-account.json path
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:

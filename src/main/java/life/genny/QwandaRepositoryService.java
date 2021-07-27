@@ -1,6 +1,7 @@
 package life.genny;
 
 import life.genny.bootxport.bootx.QwandaRepository;
+import life.genny.bootxport.xlsimport.BatchLoading;
 import life.genny.qwanda.Ask;
 import life.genny.qwanda.CodedEntity;
 import life.genny.qwanda.Question;
@@ -17,7 +18,9 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
 
 import javax.persistence.*;
-import javax.transaction.Transactional;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotNull;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
@@ -25,6 +28,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+// Sync implemention from V7 baseentityService2.java and Service.java
 public class QwandaRepositoryService implements QwandaRepository {
 
     protected static final Logger log = LogManager.getLogger(
@@ -35,6 +39,8 @@ public class QwandaRepositoryService implements QwandaRepository {
 
     public static final String REALM_HIDDEN = "hidden";
     Map<String, String> ddtCacheMock = new ConcurrentHashMap<>();
+    ValidatorFactory factory = javax.validation.Validation.buildDefaultValidatorFactory();
+    Validator validator = factory.getValidator();
 
     public void writeToDDT(final String key, final String value) {
         ddtCacheMock.put(key, value);
@@ -85,8 +91,52 @@ public class QwandaRepositoryService implements QwandaRepository {
     }
 
     public Question upsert(Question q, HashMap<String, Question> mapping) {
-        log.error("line 77 Need implementation");
-        return null;
+        try {
+            String code = q.getCode();
+            Question val = mapping.get(code);
+            BeanNotNullFields copyFields = new BeanNotNullFields();
+            if (val == null) {
+                throw new NoResultException();
+            }
+            copyFields.copyProperties(val, q);
+
+            val.setRealm(getRealm());
+            Set<ConstraintViolation<Question>> constraints = validator.validate(val);
+            for (ConstraintViolation<Question> constraint : constraints) {
+                log.error(constraint.getPropertyPath() + " " + constraint.getMessage());
+            }
+            if (constraints.isEmpty()) {
+                val = getEntityManager().merge(val);
+                return val;
+            } else {
+                log.error("Error in Hibernate Validation for quesiton " + q.getCode() + " with attribute code :" + q.getAttributeCode());
+            }
+            return null; // TODO throw an error
+
+        } catch (NoResultException | IllegalAccessException | InvocationTargetException e) {
+            try {
+
+                q.setRealm(getRealm());
+                if (BatchLoading.isSynchronise()) {
+                    Question val = findQuestionByCode(q.getCode(), REALM_HIDDEN);
+                    if (val != null) {
+                        val.setRealm(getRealm());
+                        updateRealm(val);
+                        return val;
+                    }
+                }
+
+                getEntityManager().persist(q);
+            } catch (javax.validation.ConstraintViolationException ce) {
+                log.error("Error in saving question due to constraint issue:" + q + " :" + ce.getLocalizedMessage());
+            } catch (javax.persistence.PersistenceException pe) {
+                log.error("Error in saving question :" + q + " :" + pe.getLocalizedMessage());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            Long id = q.getId();
+            return q;
+        }
     }
 
     public Long insert(Ask ask) {
@@ -192,7 +242,6 @@ public class QwandaRepositoryService implements QwandaRepository {
         return null;
     }
 
-    @Transactional
     public Question findQuestionByCode(@NotNull String code, @NotNull String realm) {
         List<Question> result = null;
         try {
@@ -373,7 +422,6 @@ public class QwandaRepositoryService implements QwandaRepository {
         }
     }
 
-    @Transactional
     public void cleanAsk(String realm) {
         String qlString = String.format("delete from ask where realm = '%s'", realm);
         EntityManager em1 = getEntityManager();
