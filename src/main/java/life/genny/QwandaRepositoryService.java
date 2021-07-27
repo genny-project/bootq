@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-// Sync implemention from V7 baseentityService2.java and Service.java
+// Sync implementation from V7 baseentityService2.java and Service.java
 public class QwandaRepositoryService implements QwandaRepository {
 
     protected static final Logger log = LogManager.getLogger(
