@@ -6,7 +6,9 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 
 ## Environment
 CLEANUP_TASK_AND_BEATTRFORM     
-value: true, false    
+value:  
+true, clean all asks in ask table and attributeCode:PRI_ASKS, baseentityCode like RUL_FRM_xxx_GRP from baseentity_attribute table  
+false, disable ask and RUL_FRM data clean up    
     
 GOOGLE_SVC_ACC_PATH     
 value: Google service token file token-secret-service-account.json path
