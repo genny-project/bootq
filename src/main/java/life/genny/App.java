@@ -31,6 +31,8 @@ public class App {
 
     private static final Logger log = Logger.getLogger(App.class);
 
+    private boolean isBatchLoadingRunning = false;
+
     @ConfigProperty(name = "quarkus.application.version")
     String version;
 
@@ -43,6 +45,14 @@ public class App {
 
     @Inject
     EntityManager em;
+
+    public boolean getIsTaskRunning() {
+        return isBatchLoadingRunning;
+    }
+
+    public void setIsTaskRunning(boolean isTaskRunning) {
+        this.isBatchLoadingRunning = isTaskRunning;
+    }
 
 
     /*
@@ -64,21 +74,35 @@ public class App {
     @Transactional
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
         String msg = "";
+
+        if (getIsTaskRunning()) {
+            return "Batch loading task is running, please try later.";
+        }
+
         if (sheetId == null) {
             msg = "Can't find env GOOGLE_SHEETS_ID!!!";
             log.error(msg);
             return msg;
         }
 
+        setIsTaskRunning(true);
+
         Realm realm = new Realm(BatchLoadMode.ONLINE, sheetId);
         List<RealmUnit> realmUnits = realm.getDataUnits();
-        for (RealmUnit realmUnit : realmUnits) {
-            if (!realmUnit.getDisable() && !realmUnit.getSkipGoogleDoc()) {
-                QwandaRepository repo = new QwandaRepositoryService(em);
-                BatchLoading bl = new BatchLoading(repo);
-                bl.persistProjectOptimization(realmUnit);
-                log.info("Finished batch loading for sheet" + realmUnit.getUri());
+        try {
+            for (RealmUnit realmUnit : realmUnits) {
+                if (!realmUnit.getDisable() && !realmUnit.getSkipGoogleDoc()) {
+                    QwandaRepository repo = new QwandaRepositoryService(em);
+                    BatchLoading bl = new BatchLoading(repo);
+                    bl.persistProjectOptimization(realmUnit);
+                    log.info("Finished batch loading for sheet" + realmUnit.getUri());
+                }
+                msg = "Finished batch loading";
             }
+        } catch (Exception ex) {
+            msg = "Exception:" + ex.getMessage() + " occurred when batch loading";
+        } finally {
+            setIsTaskRunning(false);
         }
 
         /*
@@ -101,7 +125,7 @@ public class App {
             }
         });
          */
-        return "Finished batch loading";
+        return msg;
     }
 
     @GET
