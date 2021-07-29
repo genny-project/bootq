@@ -27,6 +27,7 @@ import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.hibernate.Session;
 import org.jboss.logging.Logger;
 
@@ -51,6 +52,9 @@ public class App {
 
     @Inject
     EntityManager em;
+
+    @Inject
+    JsonWebToken accessToken;
 
     public boolean getIsTaskRunning() {
         return isBatchLoadingRunning;
@@ -78,12 +82,16 @@ public class App {
     @Produces(MediaType.TEXT_PLAIN)
     @Transactional
     public String loadSheetsUsingDefaultSheetId() {
-       String defaultSheetId =  System.getenv("GOOGLE_HOSTING_SHEET_ID");
-       if (defaultSheetId != null) {
-           return loadSheetsById(defaultSheetId);
-       } else {
-          return "Can't find default google sheetId, please set environment variable GOOGLE_HOSTING_SHEET_ID, or call /loadsheets/{sheetid}";
-       }
+        String defaultSheetId = System.getenv("GOOGLE_HOSTING_SHEET_ID");
+        if (defaultSheetId != null) {
+            return loadSheetsById(defaultSheetId);
+        } else {
+            return "Can't find default google sheetId, please set environment variable GOOGLE_HOSTING_SHEET_ID, or call /loadsheets/{sheetid}";
+        }
+    }
+
+    private void logResponse(String url, String respone) {
+        log.info("Response:" + respone + " from url:" + url);
     }
 
     @GET
@@ -92,6 +100,7 @@ public class App {
     @Transactional
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
         String msg = "";
+        String authToken = accessToken.getRawToken();
 
         if (getIsTaskRunning()) {
             return "Batch loading task is running, please try later.";
@@ -114,11 +123,20 @@ public class App {
                     BatchLoading bl = new BatchLoading(repo);
                     bl.persistProjectOptimization(realmUnit);
                     log.info("Finished batch loading for sheet" + realmUnit.getUri());
+
+                    // sync attribute, baseEntity, question
+                    String getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/attributes";
+                    String response = QwandaUtils.apiGet(getUrl, authToken);
+                    logResponse(getUrl, response);
+
+                    getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/attributes";
+                    response = QwandaUtils.apiGet(getUrl, authToken);
+                    logResponse(getUrl, response);
+
+                    getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/questions";
+                    response = QwandaUtils.apiGet(getUrl, authToken);
+                    logResponse(getUrl, response);
                 }
-
-                // sync
-                String respone = QwandaUtils.apiGet(GennySettings.qwandaServiceUrl + "/utils/realms", "NOTREQUIRED");
-
                 msg = "Finished batch loading";
             }
         } catch (Exception ex) {
@@ -126,6 +144,7 @@ public class App {
         } finally {
             setIsTaskRunning(false);
         }
+        return msg;
 
         /*
         List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
@@ -147,7 +166,6 @@ public class App {
             }
         });
          */
-        return msg;
     }
 
     @GET
