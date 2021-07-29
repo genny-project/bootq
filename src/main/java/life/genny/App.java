@@ -67,6 +67,18 @@ public class App {
             BatchLoading bl = new BatchLoading(repo);
         }
      */
+    @GET
+    @Path("/loadsheets")
+    @Produces(MediaType.TEXT_PLAIN)
+    @Transactional
+    public String loadSheetsUsingDefaultSheetId() {
+       String defaultSheetId =  System.getenv("GOOGLE_HOSTING_SHEET_ID");
+       if (defaultSheetId != null) {
+           return loadSheetsById(defaultSheetId);
+       } else {
+          return "Can't find default google sheetId, please set environment variable GOOGLE_HOSTING_SHEET_ID, or call /loadsheets/{sheetid}";
+       }
+    }
 
     @GET
     @Path("/loadsheets/{sheetid}")
