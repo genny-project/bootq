@@ -2,6 +2,7 @@ package life.genny;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -14,14 +15,19 @@ import io.vertx.core.json.JsonObject;
 import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.xlsimport.BatchLoading;
 import life.genny.models.GennyToken;
+import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.SearchEntity;
+import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwandautils.GennySettings;
+import life.genny.qwandautils.JsonUtils;
+import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.VertxUtils;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.hibernate.Session;
 import org.jboss.logging.Logger;
 
 import ch.qos.logback.core.status.Status;
@@ -97,6 +103,10 @@ public class App {
                     bl.persistProjectOptimization(realmUnit);
                     log.info("Finished batch loading for sheet" + realmUnit.getUri());
                 }
+
+                // sync
+                String respone = QwandaUtils.apiGet(GennySettings.qwandaServiceUrl + "/utils/realms", "NOTREQUIRED");
+
                 msg = "Finished batch loading";
             }
         } catch (Exception ex) {
