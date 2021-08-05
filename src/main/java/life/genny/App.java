@@ -2,7 +2,6 @@ package life.genny;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -15,12 +14,9 @@ import io.vertx.core.json.JsonObject;
 import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.xlsimport.BatchLoading;
 import life.genny.models.GennyToken;
-import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.SearchEntity;
-import life.genny.qwanda.message.QDataAttributeMessage;
 import life.genny.qwandautils.GennySettings;
-import life.genny.qwandautils.JsonUtils;
 import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.RulesUtils;
@@ -28,7 +24,6 @@ import life.genny.utils.VertxUtils;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.hibernate.Session;
 import org.jboss.logging.Logger;
 
 import ch.qos.logback.core.status.Status;
@@ -122,17 +117,20 @@ public class App {
                     QwandaRepository repo = new QwandaRepositoryService(em);
                     BatchLoading bl = new BatchLoading(repo);
                     bl.persistProjectOptimization(realmUnit);
-                    log.info("Finished batch loading for sheet" + realmUnit.getUri());
+                    log.info("Finished batch loading for sheet" + realmUnit.getUri() + ", now syncing be, attr and questions");
 
                     // sync attribute, baseEntity, question
+                    log.info("Syncing attributes for realm:" + realmUnit.getName());
                     String getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/attributes";
                     String response = QwandaUtils.apiGet(getUrl, authToken);
                     logResponse(getUrl, response);
 
-                    getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/attributes";
+                    log.info("Syncing baseentitys for realm:" + realmUnit.getName());
+                    getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/baseentitys";
                     response = QwandaUtils.apiGet(getUrl, authToken);
                     logResponse(getUrl, response);
 
+                    log.info("Syncing questions for realm:" + realmUnit.getName());
                     getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/questions";
                     response = QwandaUtils.apiGet(getUrl, authToken);
                     logResponse(getUrl, response);
@@ -144,6 +142,7 @@ public class App {
         } finally {
             setIsTaskRunning(false);
         }
+        log.info(msg);
         return msg;
 
         /*
@@ -198,7 +197,7 @@ public class App {
         List<BaseEntity> items = beUtils.getBaseEntitys(searchBE);
         log.info("Loaded " + items.size() + " DEF baseentitys");
 
-        RulesUtils.defs.put(realm, new ConcurrentHashMap<String, BaseEntity>());
+        RulesUtils.defs.put(realm, new ConcurrentHashMap<>());
 
         for (BaseEntity item : items) {
             item.setFastAttributes(true); // make fast
