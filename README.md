@@ -11,7 +11,10 @@ true, clean all asks in ask table and attributeCode:PRI_ASKS, baseentityCode lik
 false, disable ask and RUL_FRM data clean up    
     
 GOOGLE_SVC_ACC_PATH     
-value: Google service token file token-secret-service-account.json path
+value: Google service token file token-secret-service-account.json path  
+
+REACT_APP_QWANDA_API_URL    
+value: localhost:8280, http://erstwhile-wolf-genny-api-svc:8280 
 
 ## Running the application in dev mode
 
