@@ -13,6 +13,7 @@ import life.genny.qwanda.validation.Validation;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwandautils.BeanNotNullFields;
 import life.genny.qwandautils.JsonUtils;
+import life.genny.utils.VertxUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
@@ -441,5 +442,14 @@ public class QwandaRepositoryService implements QwandaRepository {
         int number = query.executeUpdate();
         em1.flush();
         log.info(String.format("Clean up BaseentityAttribute, realm:%s, %d BaseentityAttribute deleted", realm, number));
+    }
+
+    public List<Attribute> findAttributes() throws NoResultException {
+
+        final List<Attribute> results = getEntityManager()
+                .createQuery("SELECT a FROM Attribute a where a.realm=:realmStr").setParameter("realmStr", getRealm())
+                .getResultList();
+
+        return results;
     }
 }
