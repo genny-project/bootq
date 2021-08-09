@@ -17,9 +17,9 @@ import life.genny.models.GennyToken;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwandautils.GennySettings;
-import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.RulesUtils;
+import life.genny.utils.SyncEntityThread;
 import life.genny.utils.VertxUtils;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -85,9 +85,6 @@ public class App {
         }
     }
 
-    private void logResponse(String url, String respone) {
-        log.info("Response:" + respone + " from url:" + url);
-    }
 
     @GET
     @Path("/loadsheets/{sheetid}")
@@ -119,21 +116,8 @@ public class App {
                     bl.persistProjectOptimization(realmUnit);
                     log.info("Finished batch loading for sheet" + realmUnit.getUri() + ", now syncing be, attr and questions");
 
-                    // sync attribute, baseEntity, question
-                    log.info("Syncing attributes for realm:" + realmUnit.getName());
-                    String getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/attributes";
-                    String response = QwandaUtils.apiGet(getUrl, authToken);
-                    logResponse(getUrl, response);
-
-                    log.info("Syncing baseentitys for realm:" + realmUnit.getName());
-                    getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/baseentitys";
-                    response = QwandaUtils.apiGet(getUrl, authToken);
-                    logResponse(getUrl, response);
-
-                    log.info("Syncing questions for realm:" + realmUnit.getName());
-                    getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/questions";
-                    response = QwandaUtils.apiGet(getUrl, authToken);
-                    logResponse(getUrl, response);
+                    SyncEntityThread syncEntityThread = new SyncEntityThread(authToken, realmUnit.getName());
+                    syncEntityThread.start();
                 }
                 msg = "Finished batch loading";
             }
