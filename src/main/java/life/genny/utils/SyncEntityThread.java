@@ -67,8 +67,9 @@ public class SyncEntityThread extends Thread {
             getUrl = GennySettings.qwandaServiceUrl + "/service/synchronize/cache/questions";
             response = sendGet(getUrl, authToken);
             logResponse(getUrl, response);
+            log.info("Finished entities synchronization for realm:" + realm);
         } catch (ExecutionException | InterruptedException ex) {
-            log.error("Exception:" + ex.getMessage() + " occurred when do sync entities");
+            log.error("Exception:" + ex.getMessage() + " occurred when do sync entities for realm:" + realm);
         }
     }
 }

@@ -114,12 +114,13 @@ public class App {
                     QwandaRepository repo = new QwandaRepositoryService(em);
                     BatchLoading bl = new BatchLoading(repo);
                     bl.persistProjectOptimization(realmUnit);
-                    log.info("Finished batch loading for sheet" + realmUnit.getUri() + ", now syncing be, attr and questions");
+                    log.info("Finished batch loading for sheet:" + realmUnit.getUri()
+                    + ", realm:" + realmUnit.getName() + ", now syncing be, attr and questions");
 
                     SyncEntityThread syncEntityThread = new SyncEntityThread(authToken, realmUnit.getName());
                     syncEntityThread.start();
                 }
-                msg = "Finished batch loading";
+                msg = "Finished batch loading for all realms in google sheets";
             }
         } catch (Exception ex) {
             msg = "Exception:" + ex.getMessage() + " occurred when batch loading";
