@@ -19,9 +19,11 @@ import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwandautils.GennySettings;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.RulesUtils;
+import life.genny.utils.SyncEntityThread;
 import life.genny.utils.VertxUtils;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
 import ch.qos.logback.core.status.Status;
@@ -45,6 +47,9 @@ public class App {
 
     @Inject
     EntityManager em;
+
+    @Inject
+    JsonWebToken accessToken;
 
     public boolean getIsTaskRunning() {
         return isBatchLoadingRunning;
@@ -72,13 +77,14 @@ public class App {
     @Produces(MediaType.TEXT_PLAIN)
     @Transactional
     public String loadSheetsUsingDefaultSheetId() {
-       String defaultSheetId =  System.getenv("GOOGLE_HOSTING_SHEET_ID");
-       if (defaultSheetId != null) {
-           return loadSheetsById(defaultSheetId);
-       } else {
-          return "Can't find default google sheetId, please set environment variable GOOGLE_HOSTING_SHEET_ID, or call /loadsheets/{sheetid}";
-       }
+        String defaultSheetId = System.getenv("GOOGLE_HOSTING_SHEET_ID");
+        if (defaultSheetId != null) {
+            return loadSheetsById(defaultSheetId);
+        } else {
+            return "Can't find default google sheetId, please set environment variable GOOGLE_HOSTING_SHEET_ID, or call /loadsheets/{sheetid}";
+        }
     }
+
 
     @GET
     @Path("/loadsheets/{sheetid}")
@@ -86,6 +92,7 @@ public class App {
     @Transactional
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
         String msg = "";
+        String authToken = accessToken.getRawToken();
 
         if (getIsTaskRunning()) {
             return "Batch loading task is running, please try later.";
@@ -107,15 +114,21 @@ public class App {
                     QwandaRepository repo = new QwandaRepositoryService(em);
                     BatchLoading bl = new BatchLoading(repo);
                     bl.persistProjectOptimization(realmUnit);
-                    log.info("Finished batch loading for sheet" + realmUnit.getUri());
+                    log.info("Finished batch loading for sheet:" + realmUnit.getUri()
+                    + ", realm:" + realmUnit.getName() + ", now syncing be, attr and questions");
+
+                    SyncEntityThread syncEntityThread = new SyncEntityThread(authToken, realmUnit.getName());
+                    syncEntityThread.start();
                 }
-                msg = "Finished batch loading";
+                msg = "Finished batch loading for all realms in google sheets";
             }
         } catch (Exception ex) {
             msg = "Exception:" + ex.getMessage() + " occurred when batch loading";
         } finally {
             setIsTaskRunning(false);
         }
+        log.info(msg);
+        return msg;
 
         /*
         List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
@@ -137,7 +150,6 @@ public class App {
             }
         });
          */
-        return msg;
     }
 
     @GET
@@ -170,7 +182,7 @@ public class App {
         List<BaseEntity> items = beUtils.getBaseEntitys(searchBE);
         log.info("Loaded " + items.size() + " DEF baseentitys");
 
-        RulesUtils.defs.put(realm, new ConcurrentHashMap<String, BaseEntity>());
+        RulesUtils.defs.put(realm, new ConcurrentHashMap<>());
 
         for (BaseEntity item : items) {
             item.setFastAttributes(true); // make fast
