@@ -40,8 +40,9 @@
             <artifactId>log4j2-jboss-logmanager</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.slf4j</groupId>
-            <artifactId>slf4j-jboss-logmanager</artifactId>
+            <groupId>io.quarkiverse.logging.logback</groupId>
+            <artifactId>quarkus-logging-logback</artifactId>
+            <version>0.3.0</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -79,6 +80,10 @@
                 <exclusion>
                     <artifactId>xml-apis</artifactId>
                     <groupId>xml-apis</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>ch.qos.logback</artifactId>
+                    <groupId>logback-classic</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
