@@ -234,8 +234,21 @@ public class QwandaRepositoryService implements QwandaRepository {
     }
 
     public Question findQuestionByCode(@NotNull String code) {
-        log.error("line 169 Need implementation");
-        return null;
+        List<Question> result = null;
+        final String userRealmStr = getRealm();
+        try {
+
+            result = getEntityManager().createQuery("SELECT a FROM Question a where a.code=:code and a.realm=:realmStr")
+
+                    .setParameter("realmStr", getRealm()).setParameter("code", code.toUpperCase()).getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (result == null || result.isEmpty()) {
+            return null;
+        }
+        return result.get(0);
     }
 
     public QuestionQuestion upsert(QuestionQuestion qq) {
