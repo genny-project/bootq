@@ -1,5 +1,6 @@
 package life.genny;
 
+import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
@@ -10,6 +11,8 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.quarkus.runtime.ShutdownEvent;
+import io.quarkus.runtime.StartupEvent;
 import io.vertx.core.json.JsonObject;
 import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.xlsimport.BatchLoading;
@@ -192,4 +195,15 @@ public class App {
         log.info("Saved " + items.size() + " yummy DEFs!");
         return Response.ok().build();
     }
+    
+	@Transactional
+	void onStart(@Observes StartupEvent ev) {
+		log.info("Bootq Endpoint starting");
+
+	}
+
+	@Transactional
+	void onShutdown(@Observes ShutdownEvent ev) {
+		log.info("Bootq Endpoint Shutting down");
+	}
 }
