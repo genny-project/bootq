@@ -40,6 +40,10 @@ public class App {
 
     @ConfigProperty(name = "quarkus.application.version")
     String version;
+    
+    @ConfigProperty(name = "quarkus.oidc.auth-server-url")
+    String authUrl;
+
 
     @GET
     @Path("/version")
@@ -94,6 +98,7 @@ public class App {
     @Produces(MediaType.TEXT_PLAIN)
     @Transactional
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
+    	log.info("Loading in sheet "+sheetId);
         String msg = "";
         String authToken = accessToken.getRawToken();
 
@@ -198,7 +203,7 @@ public class App {
     
 	@Transactional
 	void onStart(@Observes StartupEvent ev) {
-		log.info("Bootq Endpoint starting");
+		log.info("Bootq Endpoint starting with auth Server "+authUrl);
 
 	}
 
