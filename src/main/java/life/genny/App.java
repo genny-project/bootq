@@ -8,6 +8,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,6 +21,7 @@ import life.genny.models.GennyToken;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwandautils.GennySettings;
+import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.SyncEntityThread;
@@ -40,7 +42,7 @@ public class App {
 
     @ConfigProperty(name = "quarkus.application.version")
     String version;
-    
+
     @ConfigProperty(name = "quarkus.oidc.auth-server-url")
     String authUrl;
 
@@ -98,7 +100,7 @@ public class App {
     @Produces(MediaType.TEXT_PLAIN)
     @Transactional
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
-    	log.info("Loading in sheet "+sheetId);
+        log.info("Loading in sheet " + sheetId);
         String msg = "";
         String authToken = accessToken.getRawToken();
 
@@ -123,7 +125,7 @@ public class App {
                     BatchLoading bl = new BatchLoading(repo);
                     bl.persistProjectOptimization(realmUnit);
                     log.info("Finished batch loading for sheet:" + realmUnit.getUri()
-                    + ", realm:" + realmUnit.getName() + ", now syncing be, attr and questions");
+                            + ", realm:" + realmUnit.getName() + ", now syncing be, attr and questions");
 
                     SyncEntityThread syncEntityThread = new SyncEntityThread(authToken, realmUnit.getName());
                     syncEntityThread.start();
@@ -200,15 +202,29 @@ public class App {
         log.info("Saved " + items.size() + " yummy DEFs!");
         return Response.ok().build();
     }
-    
-	@Transactional
-	void onStart(@Observes StartupEvent ev) {
-		log.info("Bootq Endpoint starting with auth Server "+authUrl);
 
-	}
+    @GET
+    @Path("/sync/{baseEntityCode}")
+    public Response syncBaseEntityByCode(@PathParam("baseEntityCode") final String baseEntityCode) throws IOException {
+        String authToken = accessToken.getRawToken();
+        // Get value in db from qwanda endpoint
+        String getUrl = GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/" + baseEntityCode;
+        String body = QwandaUtils.apiGet(getUrl, authToken);
 
-	@Transactional
-	void onShutdown(@Observes ShutdownEvent ev) {
-		log.info("Bootq Endpoint Shutting down");
-	}
+        // sync to cache
+        String postUrl = GennySettings.qwandaServiceUrl + "/service/cache/write/" + baseEntityCode;
+        String result = QwandaUtils.apiPostEntity2(postUrl, body, authToken, null);
+        return Response.ok().build();
+    }
+
+    @Transactional
+    void onStart(@Observes StartupEvent ev) {
+        log.info("Bootq Endpoint starting with auth Server " + authUrl);
+
+    }
+
+    @Transactional
+    void onShutdown(@Observes ShutdownEvent ev) {
+        log.info("Bootq Endpoint Shutting down");
+    }
 }
