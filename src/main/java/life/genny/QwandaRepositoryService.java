@@ -283,7 +283,7 @@ public class QwandaRepositoryService implements QwandaRepository {
         return result;
     }
 
-    public Long insert(Question question) {
+    public Long insert(final Question question) {
         // always check if question exists through check for unique code
         try {
 
@@ -312,6 +312,9 @@ public class QwandaRepositoryService implements QwandaRepository {
 
             existing = getEntityManager().merge(existing);
             return existing.getId();
+        } catch (Exception ex) {
+            log.error("Invalid questionCode:" + question.getCode() + ", errorMsg:" + ex.getMessage());
+            throw ex;
         }
         return question.getId();
     }
