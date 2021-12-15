@@ -7,10 +7,5 @@ function prop() {
 }
 version=$(prop 'git.build.version')
 
-
-USER=`whoami`
-USER="${USER,,}"
 ./mvnw clean package -Dquarkus.container-image.build=true -DskipTests=true 
-#./mvnw clean package -Dquarkus.container-image.build=true -DskipTests=true -Dquarkus.package.type=mutable-jar
-docker tag ${USER}/${project}:${version} ${org}/${project}:${version}
-docker tag ${USER}/${project}:${version} ${org}/${project}:latest
+docker tag ${org}/${project}:${version} ${org}/${project}:latest
