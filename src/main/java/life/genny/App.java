@@ -1,5 +1,12 @@
 package life.genny;
 
+import ch.qos.logback.core.status.Status;
+import io.quarkus.runtime.ShutdownEvent;
+import io.quarkus.runtime.StartupEvent;
+import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -7,14 +14,6 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
-import io.quarkus.runtime.ShutdownEvent;
-import io.quarkus.runtime.StartupEvent;
-import io.vertx.core.json.JsonObject;
 import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.xlsimport.BatchLoading;
 import life.genny.models.GennyToken;
@@ -26,12 +25,13 @@ import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.RulesUtils;
 import life.genny.utils.SyncEntityThread;
 import life.genny.utils.VertxUtils;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
-import ch.qos.logback.core.status.Status;
+
+
+
 
 @Path("/bootq/")
 public class App {
@@ -207,13 +207,14 @@ public class App {
     @Path("/sync/{baseEntityCode}")
     public Response syncBaseEntityByCode(@PathParam("baseEntityCode") final String baseEntityCode) throws IOException {
         String authToken = accessToken.getRawToken();
+        GennyToken userToken = new GennyToken(authToken);
         // Get value in db from qwanda endpoint
         String getUrl = GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/" + baseEntityCode;
-        String body = QwandaUtils.apiGet(getUrl, authToken);
+        String body = QwandaUtils.apiGet(getUrl, userToken);
 
         // sync to cache
         String postUrl = GennySettings.qwandaServiceUrl + "/service/cache/write/" + baseEntityCode;
-        String result = QwandaUtils.apiPostEntity2(postUrl, body, authToken, null);
+        String result = QwandaUtils.apiPostEntity2(postUrl, body, userToken, null);
         return Response.ok().build();
     }
 
