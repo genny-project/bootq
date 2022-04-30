@@ -120,6 +120,8 @@ public class App {
         List<RealmUnit> realmUnits = realm.getDataUnits();
         try {
             for (RealmUnit realmUnit : realmUnits) {
+                log.info("Importing from sheet "+ realmUnit.getUri()+" for realm "+ realmUnit.getName() );
+ 
                 if (!realmUnit.getDisable() && !realmUnit.getSkipGoogleDoc()) {
                     QwandaRepository repo = new QwandaRepositoryService(em);
                     BatchLoading bl = new BatchLoading(repo);
@@ -129,6 +131,8 @@ public class App {
 
                     SyncEntityThread syncEntityThread = new SyncEntityThread(authToken, realmUnit.getName());
                     syncEntityThread.start();
+                } else {
+                     log.info("SKIPPING sheet "+ realmUnit.getUri()+" for realm "+ realmUnit.getName() );
                 }
                 msg = "Finished batch loading for all realms in google sheets";
             }
