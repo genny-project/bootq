@@ -129,8 +129,8 @@ public class App {
                     log.info("Finished batch loading for sheet:" + realmUnit.getUri()
                             + ", realm:" + realmUnit.getName() + ", now syncing be, attr and questions");
 
-                    SyncEntityThread syncEntityThread = new SyncEntityThread(authToken, realmUnit.getName());
-                    syncEntityThread.start();
+//                    SyncEntityThread syncEntityThread = new SyncEntityThread(authToken, realmUnit.getName());
+//                    syncEntityThread.start();
                 } else {
                      log.info("SKIPPING sheet "+ realmUnit.getUri()+" for realm "+ realmUnit.getName() );
                 }
@@ -207,6 +207,7 @@ public class App {
         return Response.ok().build();
     }
 
+    /*
     @GET
     @Path("/sync/{baseEntityCode}")
     public Response syncBaseEntityByCode(@PathParam("baseEntityCode") final String baseEntityCode) throws IOException {
@@ -221,6 +222,7 @@ public class App {
         String result = QwandaUtils.apiPostEntity2(postUrl, body, userToken, null);
         return Response.ok().build();
     }
+     */
 
     @Transactional
     void onStart(@Observes StartupEvent ev) {
