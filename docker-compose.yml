@@ -39,23 +39,31 @@ services:
 #    container_name: bootq 
     volumes:
       - ./google_credentials:/root/.genny/sheets.googleapis.com-java-quickstart
-    env_file:
-      - ${ENV_FILE}
+        #env_file:
+        #- ${ENV_FILE}
     environment:
+      - CLEANUP_TASK_AND_BEATTRFORM=FALSE
+      - FULL_MYSQL_URL=mysql/gennydb?serverTimezone=UTC
+      - GOOGLE_HOSTING_SHEET_ID=1WeRS4wTjfUce0SPhCgsmuAffrGPpM9IjhtweC_O0Plg
+      - GOOGLE_SVC_ACC_PATH=/root/.genny/sheets.googleapis.com-java-quickstart/token-secret-service-account.json
+      - KEYCLOAK_AUTH_URL=https://keycloak-office.gada.io/auth/realms/internmatch
+      - KEYCLOAK_CLIENT_ID=internmatch
+      - MYSQL_USER=genny
+      - MYSQL_PASSWORD=password
+        #- REACT_APP_QWANDA_API_URL: http://erstwhile-wolf-genny-api-svc:8280
 #      - VIRTUAL_HOST=bootq.*
       - VIRTUAL_PORT=8080
       - VIRTUAL_PROTO=http
       - CERT_NAME=genny.life
       - DEBUG_SUSPEND=n
   #    - DDT_URL=http://bridge:8089 
-      - FULL_MYSQL_URL=jdbc:mysql://mysql/gennydb
     ports:
       - "8480:8080"
       - "8487:8787"
     links:
       - mysql:mysql
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/version"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/bootq/version"]
       interval: 10s
       timeout: 10s
       retries: 100    
