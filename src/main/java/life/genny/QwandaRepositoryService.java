@@ -356,7 +356,7 @@ public class QwandaRepositoryService implements QwandaRepository {
             query.setParameter("realmStr", realm);
             result = query.getResultList();
         } catch (Exception e) {
-            log.error(String.format("Query table %s Error:%s".format(realm, e.getMessage())));
+            log.error("Query table:" + tableName +   ", Error:" +  e.getMessage());
         }
         return result;
     }
