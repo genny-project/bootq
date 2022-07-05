@@ -367,7 +367,8 @@ public class QwandaRepositoryService implements QwandaRepository {
 
     public <T> List<T> queryTableByRealm(String tableName, String realm) {
         int batchSize = 2000;
-        List<T> result = Collections.emptyList();
+//        List<T> result = Collections.emptyList();
+        List<T> result = new ArrayList<T>();
         try {
             // get min and max id from table
             List<Long> minMaxResult = getMinMaxIdFromTable(tableName, realm);
@@ -393,7 +394,8 @@ public class QwandaRepositoryService implements QwandaRepository {
                     query.setParameter("realmStr", realm);
                     query.setParameter("start", startNumber);
                     query.setParameter("end", endNumber);
-                    result.addAll(query.getResultList());;
+                    result.addAll(query.getResultList());
+
                     System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", startIndex, startNumber, endNumber);
                     startNumber = endNumber + 1;
                 }
