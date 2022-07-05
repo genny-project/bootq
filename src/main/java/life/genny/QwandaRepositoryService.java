@@ -383,7 +383,7 @@ public class QwandaRepositoryService implements QwandaRepository {
                 query.setParameter("start", min);
                 query.setParameter("end", max);
                 result = query.getResultList();
-                System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", 0, min, max);
+//                System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", 0, min, max);
             } else {
                 long startIndex = 1;
                 long startNumber = min;
@@ -396,7 +396,7 @@ public class QwandaRepositoryService implements QwandaRepository {
                     query.setParameter("end", endNumber);
                     result.addAll(query.getResultList());
 
-                    System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", startIndex, startNumber, endNumber);
+//                    System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", startIndex, startNumber, endNumber);
                     startNumber = endNumber + 1;
                 }
                 if (remaining > 0) {
@@ -405,14 +405,9 @@ public class QwandaRepositoryService implements QwandaRepository {
                     query.setParameter("start", endNumber + 1);
                     query.setParameter("end", endNumber + remaining);
                     result.addAll(query.getResultList());;
-                    System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", startIndex, endNumber + 1, endNumber + remaining);
+//                    System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", startIndex, endNumber + 1, endNumber + remaining);
                 }
             }
-
-            // get 2k results each batch
-//            Query query = getEntityManager().createQuery(String.format("SELECT temp FROM %s temp where temp.realm=:realmStr", tableName));
-//            query.setParameter("realmStr", realm);
-//            result = query.getResultList();
         } catch (Exception e) {
             log.error(String.format("Query table %s Error:%s".format(realm, e.getMessage())));
         }
