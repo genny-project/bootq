@@ -349,12 +349,68 @@ public class QwandaRepositoryService implements QwandaRepository {
         return null;
     }
 
+    public ArrayList<Long> getMinMaxIdFromTable(String tableName, String realm) {
+        ArrayList<Long> result = new ArrayList<>(Collections.emptyList());
+        try {
+            Query query =  getEntityManager().createQuery(String.format("SELECT min(id) as min FROM %s temp where temp.realm=:realmStr", tableName));
+            query.setParameter("realmStr", realm);
+            result.add((Long)query.getSingleResult());
+
+            query =  getEntityManager().createQuery(String.format("SELECT max(id) as max FROM %s temp where temp.realm=:realmStr", tableName));
+            query.setParameter("realmStr", realm);
+            result.add((Long)query.getSingleResult());
+        } catch (Exception e) {
+            log.error(String.format("Query table %s Error:%s".format(realm, e.getMessage())));
+        }
+        return  result;
+    }
+
     public <T> List<T> queryTableByRealm(String tableName, String realm) {
+        int batchSize = 2000;
         List<T> result = Collections.emptyList();
         try {
-            Query query = getEntityManager().createQuery(String.format("SELECT temp FROM %s temp where temp.realm=:realmStr", tableName));
-            query.setParameter("realmStr", realm);
-            result = query.getResultList();
+            // get min and max id from table
+            List<Long> minMaxResult = getMinMaxIdFromTable(tableName, realm);
+            long min = minMaxResult.get(0).longValue();
+            long max = minMaxResult.get(1).longValue();
+
+            long loopCount = max / batchSize;
+            long remaining = max % batchSize;
+            if (loopCount == 0) {
+                Query query = getEntityManager().createQuery(String.format("SELECT temp FROM %s temp where temp.realm=:realmStr and temp.id between :start and :end", tableName));
+                query.setParameter("realmStr", realm);
+                query.setParameter("start", min);
+                query.setParameter("end", max);
+                result = query.getResultList();
+                System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", 0, min, max);
+            } else {
+                long startIndex = 1;
+                long startNumber = min;
+                long endNumber = max;
+                for (; startIndex <= loopCount; startIndex++) {
+                    endNumber = startIndex * batchSize;
+                    Query query = getEntityManager().createQuery(String.format("SELECT temp FROM %s temp where temp.realm=:realmStr and temp.id between :start and :end", tableName));
+                    query.setParameter("realmStr", realm);
+                    query.setParameter("start", startNumber);
+                    query.setParameter("end", endNumber);
+                    result.addAll(query.getResultList());;
+                    System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", startIndex, startNumber, endNumber);
+                    startNumber = endNumber + 1;
+                }
+                if (remaining > 0) {
+                    Query query = getEntityManager().createQuery(String.format("SELECT temp FROM %s temp where temp.realm=:realmStr and temp.id between :start and :end", tableName));
+                    query.setParameter("realmStr", realm);
+                    query.setParameter("start", endNumber + 1);
+                    query.setParameter("end", endNumber + remaining);
+                    result.addAll(query.getResultList());;
+                    System.out.printf("Loop: %d, startNumber: %d, endNumber:%d \n", startIndex, endNumber + 1, endNumber + remaining);
+                }
+            }
+
+            // get 2k results each batch
+//            Query query = getEntityManager().createQuery(String.format("SELECT temp FROM %s temp where temp.realm=:realmStr", tableName));
+//            query.setParameter("realmStr", realm);
+//            result = query.getResultList();
         } catch (Exception e) {
             log.error(String.format("Query table %s Error:%s".format(realm, e.getMessage())));
         }
