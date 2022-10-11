@@ -1,0 +1,89 @@
+version: '2.3'
+
+services:
+
+  mysql:
+    image:  gennyproject/mysql:8x 
+    container_name: mysql
+    environment:
+      - MYSQL_URL=mysql
+      - MYSQL_DB=gennydb
+      - MYSQL_PORT=3306
+      - MYSQL_ALLOW_EMPTY=
+      - MYSQL_DATABASE=gennydb
+      - MYSQL_USER=genny
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=password
+#    env_file:
+#      - ${ENV_FILE}
+    volumes:
+      - mysql_data:/var/lib/mysql:delegated
+    networks:
+      - mainproxy
+    ports:
+      - 3310:3306
+    command: --sql_mode=""
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+
+  bootq:
+    depends_on:
+      mysql:
+        condition: service_healthy
+    image: gennyproject/bootq:latest
+#    container_name: bootq 
+    volumes:
+      - ./google_credentials:/root/.genny/sheets.googleapis.com-java-quickstart
+        #env_file:
+        #- ${ENV_FILE}
+    environment:
+      - CLEANUP_TASK_AND_BEATTRFORM=FALSE
+      - FULL_MYSQL_URL=mysql/gennydb?serverTimezone=UTC
+      - GOOGLE_HOSTING_SHEET_ID=1WeRS4wTjfUce0SPhCgsmuAffrGPpM9IjhtweC_O0Plg
+      - GOOGLE_SVC_ACC_PATH=/root/.genny/sheets.googleapis.com-java-quickstart/token-secret-service-account.json
+      - KEYCLOAK_AUTH_URL=https://keycloak-office.gada.io/auth/realms/internmatch
+      - KEYCLOAK_CLIENT_ID=internmatch
+      - MYSQL_USER=genny
+      - MYSQL_PASSWORD=password
+        #- REACT_APP_QWANDA_API_URL: http://erstwhile-wolf-genny-api-svc:8280
+#      - VIRTUAL_HOST=bootq.*
+      - VIRTUAL_PORT=8080
+      - VIRTUAL_PROTO=http
+      - CERT_NAME=genny.life
+      - DEBUG_SUSPEND=n
+  #    - DDT_URL=http://bridge:8089 
+    ports:
+      - "8480:8080"
+      - "8487:8787"
+    links:
+      - mysql:mysql
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/bootq/version"]
+      interval: 10s
+      timeout: 10s
+      retries: 100    
+    restart: unless-stopped
+    networks:
+      - mainproxy
+
+
+
+volumes:
+  abn_tmp:
+  mysql_data:
+  minio_conf:
+  minio_data:
+  maildata:
+    driver: local
+  mailstate:
+    driver: local
+networks:
+  mainproxy:
+    driver: bridge
+
+
