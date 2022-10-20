@@ -16,15 +16,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import life.genny.bootxport.bootx.*;
 import life.genny.bootxport.xlsimport.BatchLoading;
-import life.genny.models.GennyToken;
-import life.genny.qwanda.entity.BaseEntity;
-import life.genny.qwanda.entity.SearchEntity;
-import life.genny.qwandautils.GennySettings;
-import life.genny.qwandautils.QwandaUtils;
-import life.genny.utils.BaseEntityUtils;
-import life.genny.utils.RulesUtils;
+
+import life.genny.qwandaq.models.GennyToken;
+import life.genny.qwandaq.entity.BaseEntity;
+import life.genny.qwandaq.entity.SearchEntity;
+
+import life.genny.qwandaq.models.GennySettings;
+
+import life.genny.qwandaq.utils.QwandaUtils;
+import life.genny.qwandaq.utils.BaseEntityUtils;
+
+import life.genny.utils.Store;
 import life.genny.utils.SyncEntityThread;
-import life.genny.utils.VertxUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
@@ -53,6 +56,9 @@ public class App {
     public Response version() {
         return Response.status(200).entity("Application version:" + version).build();
     }
+
+    @Inject
+    BaseEntityUtils beUtils;
 
     @Inject
     EntityManager em;
@@ -102,14 +108,14 @@ public class App {
     public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
         log.info("Loading in sheet " + sheetId);
         String msg = "";
-        String authToken = accessToken.getRawToken();
+        // String authToken = accessToken.getRawToken();
 
         if (getIsTaskRunning()) {
             return "Batch loading task is running, please try later.";
         }
 
         if (sheetId == null) {
-            msg = "Can't find env GOOGLE_SHEETS_ID!!!";
+            msg = "No sheetId supplied for endpoint: /bootq/loadsheets/{sheetid}";
             log.error(msg);
             return msg;
         }
@@ -167,11 +173,11 @@ public class App {
     }
 
     @GET
-    @Path("/loaddefs/{realm}")
+    @Path("/loaddefs/{productCode}")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response loadDefs(@PathParam("realm") final String realm) {
+    public Response loadDefs(@PathParam("productCode") final String productCode) {
 
-        log.info("Loading in DEFS for realm " + realm);
+        log.info("Loading in DEFS for productCode " + productCode);
 
         SearchEntity searchBE = new SearchEntity("SBE_DEF", "DEF test")
                 .addSort("PRI_NAME", "Created", SearchEntity.Sort.ASC)
@@ -179,31 +185,31 @@ public class App {
 
                 .addColumn("PRI_NAME", "Name");
 
-        searchBE.setRealm(realm);
+        searchBE.setRealm(productCode);
         searchBE.setPageStart(0);
         searchBE.setPageSize(10000);
 
-        JsonObject tokenObj = VertxUtils.readCachedJson(GennySettings.GENNY_REALM, "TOKEN" + realm.toUpperCase());
+        JsonObject tokenObj = VertxUtils.readCachedJson(GennySettings.GENNY_REALM, "TOKEN" + productCode.toUpperCase());
         String sToken = tokenObj.getString("value");
         GennyToken serviceToken = new GennyToken("PER_SERVICE", sToken);
 
         if ((serviceToken == null) || ("DUMMY".equalsIgnoreCase(serviceToken.getToken()))) {
-            log.error("NO SERVICE TOKEN FOR " + realm + " IN CACHE");
-            return Response.status(Status.ERROR).entity("NO SERVICE TOKEN FOR " + realm + " IN CACHE").build();
+            log.error("NO SERVICE TOKEN FOR " + productCode + " IN CACHE");
+            return Response.status(Status.ERROR).entity("NO SERVICE TOKEN FOR " + productCode + " IN CACHE").build();
         }
-        BaseEntityUtils beUtils = new BaseEntityUtils(serviceToken, serviceToken);
 
+        log.info("Fetching preexisting BaseEntities from Genny DB");
         List<BaseEntity> items = beUtils.getBaseEntitys(searchBE);
         log.info("Loaded " + items.size() + " DEF baseentitys");
 
-        RulesUtils.defs.put(realm, new ConcurrentHashMap<>());
+        Store.defs.put(productCode, new ConcurrentHashMap<>());
 
         for (BaseEntity item : items) {
             item.setFastAttributes(true); // make fast
-            RulesUtils.defs.get(realm).put(item.getCode(), item);
-            log.info("Saving (" + realm + ") DEF " + item.getCode());
+            Store.defs.get(productCode).put(item.getCode(), item);
+            log.info("Saving (" + productCode + ") DEF " + item.getCode());
         }
-        log.info("Saved " + items.size() + " yummy DEFs!");
+        log.info("Saved " + items.size() + " yummy DEFs for product: " + productCode + "!");
         return Response.ok().build();
     }
 
