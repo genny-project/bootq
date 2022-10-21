@@ -29,10 +29,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
-
-
-
-
 @Path("/bootq/")
 public class App {
 
@@ -45,7 +41,6 @@ public class App {
 
     @ConfigProperty(name = "quarkus.oidc.auth-server-url")
     String authUrl;
-
 
     @GET
     @Path("/version")
@@ -68,18 +63,20 @@ public class App {
         this.isBatchLoadingRunning = isTaskRunning;
     }
 
-
     /*
-    // Test HibernateUtil
-        @GET
-        @Path("/test")
-        public void test() {
-            SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-            Session openSession = sessionFactory.openSession();
-            EntityManager createEntityManager = openSession.getEntityManagerFactory().createEntityManager();
-            QwandaRepository repo = new QwandaRepositoryImpl(createEntityManager);
-            BatchLoading bl = new BatchLoading(repo);
-        }
+     * // Test HibernateUtil
+     * 
+     * @GET
+     * 
+     * @Path("/test")
+     * public void test() {
+     * SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+     * Session openSession = sessionFactory.openSession();
+     * EntityManager createEntityManager =
+     * openSession.getEntityManagerFactory().createEntityManager();
+     * QwandaRepository repo = new QwandaRepositoryImpl(createEntityManager);
+     * BatchLoading bl = new BatchLoading(repo);
+     * }
      */
     @GET
     @Path("/loadsheets")
@@ -93,7 +90,6 @@ public class App {
             return "Can't find default google sheetId, please set environment variable GOOGLE_HOSTING_SHEET_ID, or call /loadsheets/{sheetid}";
         }
     }
-
 
     @GET
     @Path("/loadsheets/{sheetid}")
@@ -120,19 +116,22 @@ public class App {
         List<RealmUnit> realmUnits = realm.getDataUnits();
         try {
             for (RealmUnit realmUnit : realmUnits) {
-                log.info("Importing from sheet "+ realmUnit.getUri()+" for realm "+ realmUnit.getName() );
- 
+                log.info("Importing from sheet " + realmUnit.getUri() + " for realm " + realmUnit.getName());
+
                 if (!realmUnit.getDisable() && !realmUnit.getSkipGoogleDoc()) {
+                    log.info("Starting batch loading for sheet:" + realmUnit.getUri()
+                            + ", realm:" + realmUnit.getName());
                     QwandaRepository repo = new QwandaRepositoryService(em);
                     BatchLoading bl = new BatchLoading(repo);
                     bl.persistProjectOptimization(realmUnit);
                     log.info("Finished batch loading for sheet:" + realmUnit.getUri()
                             + ", realm:" + realmUnit.getName() + ", now syncing be, attr and questions");
 
-//                    SyncEntityThread syncEntityThread = new SyncEntityThread(authToken, realmUnit.getName());
-//                    syncEntityThread.start();
+                    // SyncEntityThread syncEntityThread = new SyncEntityThread(authToken,
+                    // realmUnit.getName());
+                    // syncEntityThread.start();
                 } else {
-                     log.info("SKIPPING sheet "+ realmUnit.getUri()+" for realm "+ realmUnit.getName() );
+                    log.info("SKIPPING sheet " + realmUnit.getUri() + " for realm " + realmUnit.getName());
                 }
                 msg = "Finished batch loading for all realms in google sheets";
             }
@@ -145,24 +144,27 @@ public class App {
         return msg;
 
         /*
-        List<Tuple2<RealmUnit, BatchLoading>> collect = realm.getDataUnits().stream().map(d -> {
-//            SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-//            Session openSession = sessionFactory.openSession();
-//            EntityManager createEntityManager = openSession.getEntityManagerFactory().createEntityManager();
-            QwandaRepository repo = new QwandaRepositoryService(em);
-            BatchLoading bl = new BatchLoading(repo);
-            return Tuple.of(d, bl);
-        }).collect(Collectors.toList());
-
-        collect.parallelStream().forEach(d -> {
-            if (!d._1.getDisable() && !d._1.getSkipGoogleDoc()) {
-                d._2.persistProject(d._1);
-                System.out.println("Finish batch loading, sheetID:" + d._1.getUri());
-            } else {
-                System.out.println("Realm:" + d._1.getName() + ", disabled:" + d._1.getDisable() + ", skipGoogleDoc:"
-                        + d._1.getSkipGoogleDoc());
-            }
-        });
+         * List<Tuple2<RealmUnit, BatchLoading>> collect =
+         * realm.getDataUnits().stream().map(d -> {
+         * // SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+         * // Session openSession = sessionFactory.openSession();
+         * // EntityManager createEntityManager =
+         * openSession.getEntityManagerFactory().createEntityManager();
+         * QwandaRepository repo = new QwandaRepositoryService(em);
+         * BatchLoading bl = new BatchLoading(repo);
+         * return Tuple.of(d, bl);
+         * }).collect(Collectors.toList());
+         * 
+         * collect.parallelStream().forEach(d -> {
+         * if (!d._1.getDisable() && !d._1.getSkipGoogleDoc()) {
+         * d._2.persistProject(d._1);
+         * System.out.println("Finish batch loading, sheetID:" + d._1.getUri());
+         * } else {
+         * System.out.println("Realm:" + d._1.getName() + ", disabled:" +
+         * d._1.getDisable() + ", skipGoogleDoc:"
+         * + d._1.getSkipGoogleDoc());
+         * }
+         * });
          */
     }
 
@@ -208,20 +210,24 @@ public class App {
     }
 
     /*
-    @GET
-    @Path("/sync/{baseEntityCode}")
-    public Response syncBaseEntityByCode(@PathParam("baseEntityCode") final String baseEntityCode) throws IOException {
-        String authToken = accessToken.getRawToken();
-        GennyToken userToken = new GennyToken(authToken);
-        // Get value in db from qwanda endpoint
-        String getUrl = GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/" + baseEntityCode;
-        String body = QwandaUtils.apiGet(getUrl, userToken);
-
-        // sync to cache
-        String postUrl = GennySettings.qwandaServiceUrl + "/service/cache/write/" + baseEntityCode;
-        String result = QwandaUtils.apiPostEntity2(postUrl, body, userToken, null);
-        return Response.ok().build();
-    }
+     * @GET
+     * 
+     * @Path("/sync/{baseEntityCode}")
+     * public Response syncBaseEntityByCode(@PathParam("baseEntityCode") final
+     * String baseEntityCode) throws IOException {
+     * String authToken = accessToken.getRawToken();
+     * GennyToken userToken = new GennyToken(authToken);
+     * // Get value in db from qwanda endpoint
+     * String getUrl = GennySettings.qwandaServiceUrl + "/qwanda/baseentitys/" +
+     * baseEntityCode;
+     * String body = QwandaUtils.apiGet(getUrl, userToken);
+     * 
+     * // sync to cache
+     * String postUrl = GennySettings.qwandaServiceUrl + "/service/cache/write/" +
+     * baseEntityCode;
+     * String result = QwandaUtils.apiPostEntity2(postUrl, body, userToken, null);
+     * return Response.ok().build();
+     * }
      */
 
     @Transactional
