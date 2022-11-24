@@ -46,8 +46,8 @@ services:
       - FULL_MYSQL_URL=mysql/gennydb?serverTimezone=UTC
       - GOOGLE_HOSTING_SHEET_ID=1WeRS4wTjfUce0SPhCgsmuAffrGPpM9IjhtweC_O0Plg
       - GOOGLE_SVC_ACC_PATH=/root/.genny/sheets.googleapis.com-java-quickstart/token-secret-service-account.json
-      - KEYCLOAK_AUTH_URL=${GENNY_KEYCLOAK_URL:https://keycloak-office.gada.io/auth}/realms/$GENNY_REALM:internmatch}
-      - KEYCLOAK_CLIENT_ID=${GENNY_CLIENT_ID:internmatch}
+      - KEYCLOAK_AUTH_URL=https://keycloak-bali.gada.io/realms/gada
+      - KEYCLOAK_CLIENT_ID=gadatron
       - MYSQL_USER=genny
       - MYSQL_PASSWORD=password
         #- REACT_APP_QWANDA_API_URL: http://erstwhile-wolf-genny-api-svc:8280
