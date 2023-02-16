@@ -7,5 +7,5 @@ function prop() {
 }
 version=${1:-`prop 'git.build.version'`}
 echo $version
-#./mvnw clean package -Dquarkus.container-image.build=true -DskipTests=true 
-#docker tag ${org}/${project}:${version} ${org}/${project}:latest
+./mvnw clean package -Dquarkus.container-image.build=true -DskipTests=true 
+docker tag ${org}/${project}:${version} ${org}/${project}:latest
