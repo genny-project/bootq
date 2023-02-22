@@ -1,4 +1,6 @@
 genny.env
+gettoken-prod-script.sh
+gettoken-script.sh
 genny.env.json
 env-conf
 .env
