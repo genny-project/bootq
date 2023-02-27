@@ -4,7 +4,6 @@ import ch.qos.logback.core.status.Status;
 import io.quarkus.runtime.ShutdownEvent;
 import io.quarkus.runtime.StartupEvent;
 import io.vertx.core.json.JsonObject;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.enterprise.event.Observes;
@@ -20,10 +19,8 @@ import life.genny.models.GennyToken;
 import life.genny.qwanda.entity.BaseEntity;
 import life.genny.qwanda.entity.SearchEntity;
 import life.genny.qwandautils.GennySettings;
-import life.genny.qwandautils.QwandaUtils;
 import life.genny.utils.BaseEntityUtils;
 import life.genny.utils.RulesUtils;
-import life.genny.utils.SyncEntityThread;
 import life.genny.utils.VertxUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -46,6 +43,7 @@ public class App {
     @Path("/version")
     @Produces(MediaType.TEXT_PLAIN)
     public Response version() {
+        log.info("Application endpoint hit");
         return Response.status(200).entity("Application version:" + version).build();
     }
 
@@ -63,31 +61,18 @@ public class App {
         this.isBatchLoadingRunning = isTaskRunning;
     }
 
-    /*
-     * // Test HibernateUtil
-     * 
-     * @GET
-     * 
-     * @Path("/test")
-     * public void test() {
-     * SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-     * Session openSession = sessionFactory.openSession();
-     * EntityManager createEntityManager =
-     * openSession.getEntityManagerFactory().createEntityManager();
-     * QwandaRepository repo = new QwandaRepositoryImpl(createEntityManager);
-     * BatchLoading bl = new BatchLoading(repo);
-     * }
-     */
     @GET
     @Path("/loadsheets")
     @Produces(MediaType.TEXT_PLAIN)
     @Transactional
-    public String loadSheetsUsingDefaultSheetId() {
+    public Response loadSheetsUsingDefaultSheetId() {
         String defaultSheetId = System.getenv("GOOGLE_HOSTING_SHEET_ID");
         if (defaultSheetId != null) {
-            return loadSheetsById(defaultSheetId);
+            return Response.ok().entity(loadSheetsById(defaultSheetId)).build();
         } else {
-            return "Can't find default google sheetId, please set environment variable GOOGLE_HOSTING_SHEET_ID, or call /loadsheets/{sheetid}";
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Can't find default google sheetId, please set environment variable GOOGLE_HOSTING_SHEET_ID, or call /loadsheets/{sheetid}")
+                    .build();
         }
     }
 
@@ -95,19 +80,22 @@ public class App {
     @Path("/loadsheets/{sheetid}")
     @Produces(MediaType.TEXT_PLAIN)
     @Transactional
-    public String loadSheetsById(@PathParam("sheetid") final String sheetId) {
+    public Response loadSheetsById(@PathParam("sheetid") final String sheetId) {
         log.info("Loading in sheet " + sheetId);
         String msg = "";
         String authToken = accessToken.getRawToken();
 
         if (getIsTaskRunning()) {
-            return "Batch loading task is running, please try later.";
+            log.error("Batch loading task is running, please try later or force restart pod");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Batch loading task is running, please try later or force restart pod")
+                    .build();
         }
 
         if (sheetId == null) {
             msg = "Can't find env GOOGLE_SHEETS_ID!!!";
             log.error(msg);
-            return msg;
+            return Response.status(Response.Status.NOT_FOUND).entity(msg).build();
         }
 
         setIsTaskRunning(true);
@@ -141,7 +129,7 @@ public class App {
             setIsTaskRunning(false);
         }
         log.info(msg);
-        return msg;
+        return Response.ok().entity(msg).build();
 
         /*
          * List<Tuple2<RealmUnit, BatchLoading>> collect =

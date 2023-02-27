@@ -13,7 +13,6 @@ import life.genny.qwanda.validation.Validation;
 import life.genny.qwanda.attribute.Attribute;
 import life.genny.qwandautils.BeanNotNullFields;
 import life.genny.qwandautils.JsonUtils;
-import life.genny.utils.VertxUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.ConstraintViolationException;
