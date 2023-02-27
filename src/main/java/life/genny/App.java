@@ -61,21 +61,6 @@ public class App {
         this.isBatchLoadingRunning = isTaskRunning;
     }
 
-    /*
-     * // Test HibernateUtil
-     * 
-     * @GET
-     * 
-     * @Path("/test")
-     * public void test() {
-     * SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-     * Session openSession = sessionFactory.openSession();
-     * EntityManager createEntityManager =
-     * openSession.getEntityManagerFactory().createEntityManager();
-     * QwandaRepository repo = new QwandaRepositoryImpl(createEntityManager);
-     * BatchLoading bl = new BatchLoading(repo);
-     * }
-     */
     @GET
     @Path("/loadsheets")
     @Produces(MediaType.TEXT_PLAIN)
@@ -101,8 +86,9 @@ public class App {
         String authToken = accessToken.getRawToken();
 
         if (getIsTaskRunning()) {
+            log.error("Batch loading task is running, please try later or force restart pod");
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Batch loading task is running, please try later.")
+                    .entity("Batch loading task is running, please try later or force restart pod")
                     .build();
         }
 
