@@ -388,7 +388,12 @@ public class QwandaRepositoryService implements QwandaRepository {
         int index = 1;
 
         for (CodedEntity t : objectList) {
-            em1.persist(t);
+			try {
+				em1.persist(t);
+			} catch(ConstraintViolationException e) {
+				log.warn("ConstraintViolationException: Skipping item with code: " + t.getCode());
+				continue;
+			}
             if (index % BATCHSIZE == 0) {
                 //flush a batch of inserts and release memory:
                 log.debug("BaseEntity Batch is full, flush to database.");
