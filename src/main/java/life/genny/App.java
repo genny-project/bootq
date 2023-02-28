@@ -125,10 +125,11 @@ public class App {
             }
         } catch (Exception ex) {
             msg = "Exception:" + ex.getMessage() + " occurred when batch loading";
+			log.info(msg);
+			ex.printStackTrace();
         } finally {
             setIsTaskRunning(false);
         }
-        log.info(msg);
         return Response.ok().entity(msg).build();
 
         /*
