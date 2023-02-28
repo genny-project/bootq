@@ -390,8 +390,8 @@ public class QwandaRepositoryService implements QwandaRepository {
         for (CodedEntity t : objectList) {
 			try {
 				em1.persist(t);
-			} catch(ConstraintViolationException e) {
-				log.warn("ConstraintViolationException: Skipping item with code: " + t.getCode());
+			} catch(PersistenceException e) {
+				log.warn("PersistenceException: Skipping item with code: " + t.getCode());
 				continue;
 			}
             if (index % BATCHSIZE == 0) {
